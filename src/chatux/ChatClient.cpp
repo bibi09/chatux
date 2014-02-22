@@ -98,7 +98,7 @@ void ChatClient::run() {
 
 
 void ChatClient::send(PROTOCOL_FLAGS protocol, const string& message) {
-	static const int MAX_MESSAGE_LENGTH = BUFFER_MESSAGE_SIZE - 2 ;
+	static const unsigned int MAX_MESSAGE_LENGTH = BUFFER_MESSAGE_SIZE - 2 ;
 	if (message.size() > MAX_MESSAGE_LENGTH)
 		// @TODO write into logs!
 		return ;

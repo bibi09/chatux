@@ -110,21 +110,6 @@ static void launch() {
 
 
 
-void randomString(std::string& str) {
-	const unsigned char MAX_LENGTH = (rand() % 32) + 1 ;
-	str.reserve(MAX_LENGTH) ;
-	for (unsigned char pos = 0 ; pos < MAX_LENGTH ; pos++) {
-		if (rand() % 2 == 0) {
-			// Write a number, codes from 48 to 57 in ASCII table
-			str.push_back((char) ((rand() % 10) + 48)) ;
-		}
-		else {
-			// Write a lowercase letter, codes from 97 to 122 in ASCII table
-			str.push_back((char) ((rand() % 26) + 97)) ;
-		}
-	}
-}
-
 /** @brief Main function */
 int main(int argc, char** argv) {
 	char type = setContext(argc, argv) ;
