@@ -1,6 +1,7 @@
 #include <chatux/ChatClient.h>
 #include <chatux/ChatWindow.h>
 #include <chatux/TypeWindow.h>
+#include <stdlib.h>
 
 #define MEMORY_SIZE		16
 #define NAME_COLOR_TYPE	"typeText"
@@ -18,7 +19,7 @@ TypeWindow::TypeWindow(unsigned short width, unsigned short height,
 	keypad(m_cursesWindowPtr, TRUE) ;
 	setColorPair(NAME_COLOR_TYPE, COLOR_WHITE, COLOR_BLACK) ;
 
-	waddstr(m_cursesWindowPtr, WINDOW_TIPS) ;
+	Window::printStr(WINDOW_TIPS) ;
 	wattron(m_cursesWindowPtr, COLOR_PAIR(getColorPair(NAME_COLOR_TYPE))) ;
 	m_typedText.reserve(128) ;
 	m_memoryPosition = m_memory.end() ;
@@ -43,7 +44,7 @@ void TypeWindow::update() {
 					eraseContent() ;
 					if (m_memoryPosition != m_memory.end()) {
 						m_typedText = *m_memoryPosition ;
-						waddstr(m_cursesWindowPtr, m_typedText.c_str()) ;
+						Window::printStr(m_typedText) ;
 					}
 					else {
 						m_typedText.clear() ;
@@ -56,7 +57,7 @@ void TypeWindow::update() {
 					m_memoryPosition-- ;
 					eraseContent() ;
 					m_typedText = *m_memoryPosition ;
-					waddstr(m_cursesWindowPtr, m_typedText.c_str()) ;
+					Window::printStr(m_typedText) ;
 				}
 				break ;
 		}
@@ -65,7 +66,6 @@ void TypeWindow::update() {
 		if (!m_typedText.empty()) {
 			// Send message and clear the typed text!
 			ChatClient::getInstance() -> echo(m_typedText) ;
-
 			eraseContent() ;
 
 			if (m_memory.size() > MEMORY_SIZE)
@@ -86,16 +86,20 @@ void TypeWindow::update() {
 	}
 	else if (key >= 0b11000010) {
 		// UTF8: Characters are sent on two bytes (or more, but not supported).
-		wechochar(m_cursesWindowPtr, key) ;
-		key = wgetch(m_cursesWindowPtr) ;
-		m_typedText.push_back(key) ;
-		wechochar(m_cursesWindowPtr, key) ;
-		m_typedText.push_back(key) ;
+		static char utf8Chars[2] ;
+		utf8Chars[0] = key ;
+		utf8Chars[1] = wgetch(m_cursesWindowPtr) ;
+		wchar_t utf8WChar ;
+		mbstowcs(&utf8WChar, utf8Chars, sizeof(utf8Chars)) ;
+		m_typedText.push_back(utf8WChar) ;
+		Window::printChar(utf8WChar) ;
 	}
 	else {
 		// ASCII!
-		wechochar(m_cursesWindowPtr, key) ;
-		m_typedText.push_back(key) ;
+		wchar_t utf8WChar ;
+		mbstowcs(&utf8WChar, (char*) &key, sizeof(key)) ;
+		Window::printChar(utf8WChar) ;
+		m_typedText.push_back(utf8WChar) ;
 	}
 }
 
@@ -106,5 +110,5 @@ void TypeWindow::display() {
 
 void TypeWindow::eraseContent() {
 	wclear(m_cursesWindowPtr) ;
-	waddstr(m_cursesWindowPtr, WINDOW_TIPS) ;
+	Window::printStr(WINDOW_TIPS) ;
 }

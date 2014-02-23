@@ -4,6 +4,7 @@
 #include <chatux/TypeWindow.h>
 #include <chatux/ChatClient.h>
 #include <chatux/ChatServer.h>
+#include <easylog/Logger.h>
 
 #include <locale.h>
 #include <stdlib.h>
@@ -23,11 +24,25 @@ bool RunningApplication ;
 
 /** @brief	Initialization. */
 static void init() {
-	// Initialize NCURSES
 	setlocale(LC_ALL, "") ;
+	// Initialize NCURSES
 	Window::setupCurses() ;
 }
 
+
+/***
+ * @brief	Convert the alias to wchar.
+ * @param	alias	Alias entered by the user.
+ * @warning	This is just a stabilization function, it does not convert special
+ *			chars.
+ */
+static wchar_t* aliasToWChar(char* alias) {
+	static wchar_t* walias ;
+	string input = alias ;
+	wstring output(input.begin(), input.end()) ;
+	walias = (wchar_t*) output.c_str() ;
+	return walias ;
+}
 
 /**
  * @brief	Set up the context of the application from the given arguments.
@@ -46,14 +61,15 @@ static char setContext(int argc, char** argv) {
 	if ((connectionType != 's') && (connectionType != 'c'))
 		return 0 ;
 
-	ChatuxContext.Alias[USER_ALIAS_LENGTH] = '\0' ;
+	wchar_t* wargv2 = aliasToWChar(argv[2]) ;
+	ChatuxContext.Alias[USER_ALIAS_LENGTH] = L'\0' ;
 	size_t originalAliasLength = strlen(argv[2]) ;
 	if (originalAliasLength > USER_ALIAS_LENGTH)
-		strncpy(ChatuxContext.Alias, argv[2], USER_ALIAS_LENGTH) ;
+		wmemcpy(ChatuxContext.Alias, wargv2, USER_ALIAS_LENGTH) ;
 	else {
 		size_t diffSize = USER_ALIAS_LENGTH - originalAliasLength ;
-		memset(ChatuxContext.Alias, ' ', diffSize) ;
-		strncpy(ChatuxContext.Alias + diffSize, argv[2], originalAliasLength) ;
+		wmemset(ChatuxContext.Alias, L' ', diffSize) ;
+		wmemcpy(ChatuxContext.Alias + diffSize, wargv2, originalAliasLength) ;
 	}
 
 	ChatuxContext.IP = argv[3] ;
@@ -112,6 +128,8 @@ static void launch() {
 
 /** @brief Main function */
 int main(int argc, char** argv) {
+	Logger::init(argv[0]) ;
+
 	char type = setContext(argc, argv) ;
 	if (type) {
 		switch(type) {
@@ -147,5 +165,6 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE) ;
 	}
 
+	Logger::close() ;
 	exit(EXIT_SUCCESS) ;
 }

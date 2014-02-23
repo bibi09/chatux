@@ -35,26 +35,25 @@ void ChatWindow::display() {
 	wbkgd(m_cursesWindowPtr, COLOR_PAIR(defaultColor)) ;
 }
 
-void ChatWindow::echo(const string& alias, const string& msg) {
+void ChatWindow::echo(const wstring& alias, const wstring& msg) {
 	// Display the date of the message
 	wattron(m_cursesWindowPtr, COLOR_PAIR(getColorPair(NAME_COLOR_CHATTIME))) ;
-		waddstr(m_cursesWindowPtr, "[") ;
-		waddstr(m_cursesWindowPtr, getTime()) ;
-		waddstr(m_cursesWindowPtr, "] ") ;
+		Window::printChar('[') ;
+		Window::printStr(getTime()) ;
+		Window::printStr("] ") ;
 	wattroff(m_cursesWindowPtr, COLOR_PAIR(getColorPair(NAME_COLOR_CHATTIME))) ;
 
 	// Display the alias of the user who sent the message
 	wattron(m_cursesWindowPtr, COLOR_PAIR(getColorPair(NAME_COLOR_CHATOTHERS))) ;
-		waddstr(m_cursesWindowPtr, alias.c_str()) ;
-		waddstr(m_cursesWindowPtr, " : ") ;
+		Window::printStr(alias) ;
+		Window::printStr(" : ") ;
 	wattroff(m_cursesWindowPtr, COLOR_PAIR(getColorPair(NAME_COLOR_CHATOTHERS))) ;
 
-	waddstr(m_cursesWindowPtr, msg.c_str()) ;
-	waddch(m_cursesWindowPtr, '\n') ;
+	Window::printStr(msg) ;
+	Window::printChar('\n') ;
 }
 
-void ChatWindow::eraseContent() {
-}
+void ChatWindow::eraseContent() {}
 
 
 char* ChatWindow::getTime() {

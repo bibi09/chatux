@@ -47,7 +47,7 @@ class ChatClient : public es::Client, private NoCopy {
 		 * @brief	Message to send to the server.
 		 * @param	The client sends a message to display on the chat.
 		 */
-		void echo(const std::string& message) ;
+		void echo(const std::wstring& message) ;
 
 
 	private:
@@ -69,7 +69,7 @@ class ChatClient : public es::Client, private NoCopy {
 		 * @param	protocol	Protocol to use.
 		 * @param	message		Message to send.
 		 */
-		void send(PROTOCOL_FLAGS protocol, const std::string& message) ;
+		void send(PROTOCOL_FLAGS protocol, const std::wstring& message) ;
 } ;
 
 #endif

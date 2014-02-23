@@ -17,6 +17,13 @@
 #include "SocketException.h"
 
 
+/** Change the value of the macro to easily switch to IPv6. */
+#define	SOCKET_FAMILY_USED	AF_INET
+#ifndef SOCKET_FAMILY_USED
+	#define	SOCKET_FAMILY_USED	AF_INET6
+	#error "IPv6 not fully supported!"
+#endif
+
 namespace es {
     /**
      * @brief   InternetSocket class makes socket programming faster and shorter to
@@ -63,8 +70,11 @@ namespace es {
             bool m_isListening ;
 
             /** @brief Address of the machine. */
-            struct sockaddr_in m_address ;
-
+			#if SOCKET_FAMILY_USED == AF_INET
+            	struct sockaddr_in m_address ;
+            #elif SOCKET_FAMILY_USED == AF_INET6
+				struct sockaddr_in6 m_address ;
+			#endif
 
         public:
             /**
@@ -306,7 +316,11 @@ namespace es {
             int getSocket() const ;
 
             /** @brief Get the address structure of the machine. */
+			#if SOCKET_FAMILY_USED == AF_INET
             const sockaddr_in& getAddress() const ;
+            #elif SOCKET_FAMILY_USED == AF_INET6
+            const sockaddr_in6& getAddress() const ;
+            #endif
 
             /** @brief To know if the socket is bound to the machine. */
             bool isBound() const ;

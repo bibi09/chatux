@@ -145,3 +145,21 @@ void Window::moveCursor(Direction dir) {
 
 	refresh() ;
 }
+
+
+int Window::printChar(char c) {
+	return waddch(m_cursesWindowPtr, c) ;
+}
+
+int Window::printStr(const string& str) {
+	return waddstr(m_cursesWindowPtr, str.c_str()) ;
+}
+
+int Window::printChar(wchar_t c) {
+	cchar_t t = {0 , {c, 0}} ;
+	return wadd_wch(m_cursesWindowPtr, &t) ;
+}
+
+int Window::printStr(const wstring& str) {
+	return waddwstr(m_cursesWindowPtr, str.c_str()) ;
+}

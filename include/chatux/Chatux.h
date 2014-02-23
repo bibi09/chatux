@@ -1,17 +1,18 @@
 #ifndef __CHATUX_CONTEXT__
 #define __CHATUX_CONTEXT__
 
-#define CHATUX_VERSION 14
+#define CHATUX_VERSION 21
 
 #define USER_ALIAS_LENGTH 8
 typedef struct {
-	char Alias[USER_ALIAS_LENGTH+1] ;
+	wchar_t Alias[USER_ALIAS_LENGTH+1] ;
 	char* IP ;
 	unsigned short Port ;
 } Context ;
 
 
 #define BUFFER_MESSAGE_SIZE	255
+#define BUFFER_MESSAGE_SIZE_BYTES sizeof(wchar_t) * BUFFER_MESSAGE_SIZE
 /** @brief	Flags of the protocol used. */
 enum PROTOCOL_FLAGS {PROTOCOL_SERVER_DOWN	= 0,		// The server is down
 					 PROTOCOL_DISCONNECT	= 1,		// A client is disconnected

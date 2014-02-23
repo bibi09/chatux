@@ -1,4 +1,5 @@
 #include <chatux/ChatServer.h>
+#include <easylog/Logger.h>
 #include <iostream>
 
 using namespace es ;
@@ -9,9 +10,17 @@ bool ChatServer::IsConfigurated = false ;
 unsigned short ChatServer::ServerPort = 0 ;
 
 
-ChatServer::ChatServer() : Server(ServerPort) {}
+ChatServer::ChatServer() : Server(ServerPort) {
+	#if DEBUG
+	Logger::print(LOG_DEBUG, (char*) "[Server] Binded to port %d", ServerPort) ;
+	#endif
+}
 
 ChatServer::~ChatServer() throw() {
+	#if DEBUG
+	Logger::print(LOG_DEBUG, (char*) "[Server] Shutting down") ;
+	#endif
+
 	char buffer = PROTOCOL_SERVER_DOWN ;
 	sendAll(&buffer, sizeof(buffer)) ;
 }
@@ -29,30 +38,37 @@ bool ChatServer::configure(unsigned short serverPort) {
 		IsConfigurated = true ;
 	}
 
+	#if DEBUG
+	if (!IsConfigurated)
+		Logger::print(LOG_ERR, (char*) "[Server] Not correctly configurated") ;
+	#endif
+
 	return IsConfigurated ;
 }
 
 
 void* ChatServer::manageClient(int socket) {
 	// Received buffer message.
-	char received[BUFFER_MESSAGE_SIZE] ;
+	wchar_t received[BUFFER_MESSAGE_SIZE] ;
 	// Buffer to write the message to send.
-	char sent[BUFFER_MESSAGE_SIZE] ;
+	wchar_t sent[BUFFER_MESSAGE_SIZE] ;
 	// Real size of the buffer (lower of equal to the maximal size).
 	int realSize, sizeSent ;
 	// Switch to safely stop the thread.
 	bool continueThread = true ;
 	// Alias linked to the client.
-	string alias ;
+	wstring alias ;
 
-	while(continueThread
-			&& (realSize = m_socket.recv(socket, received, BUFFER_MESSAGE_SIZE))) {
+	while (continueThread
+			&& (realSize = m_socket.recv(socket,
+										 received,
+										 BUFFER_MESSAGE_SIZE_BYTES))) {
 		// Parse the protocol and make action according to this
-		switch(received[0]) {
+		switch (received[0]) {
 			case PROTOCOL_DISCONNECT:
 				// Set the message to send and notify all the clients
-//				memcpy(received + 1, m_aliases[socket].c_str(), m_aliases[socket].size()) ;
-//				sendAll(received, m_aliases[socket].size() + 1) ;
+//				wmemcpy(received + 1, m_aliases[socket].c_str(), m_aliases[socket].size()) ;
+//				sendAll(received, sizeof(wchar_t) * (m_aliases[socket].size() + 1)) ;
 				continueThread = false ;
 				break ;
 
@@ -64,11 +80,12 @@ void* ChatServer::manageClient(int socket) {
 					continueThread = false ;
 
 				// Notify all the clients
-				sizeSent = sizeof(char) + USER_ALIAS_LENGTH + realSize - 1 ;
+				size_t messageLength = wcslen(received + 1) + 1 ;
+				sizeSent = 1 + USER_ALIAS_LENGTH + messageLength ;
 				sent[0] = PROTOCOL_ECHO ;
-				memcpy(sent + 1, alias.c_str(), USER_ALIAS_LENGTH) ;
-				memcpy(sent + 1 + USER_ALIAS_LENGTH, received + 1, realSize - 1) ;
-				sendAll(sent, sizeSent) ;
+				wmemcpy(sent + 1, alias.c_str(), USER_ALIAS_LENGTH) ;
+				wmemcpy(sent + 1 + USER_ALIAS_LENGTH, received + 1, messageLength) ;
+				sendAll(sent, sizeof(wchar_t) * sizeSent) ;
 				}
 				break ;
 

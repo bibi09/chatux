@@ -42,7 +42,7 @@ class ChatWindow : public Window {
 		 * @param	alias	Alias of the author of the message.
 		 * @param	msg		The message to display.
 		 */
-		virtual void echo(const std::string& alias, const std::string& msg) ;
+		virtual void echo(const std::wstring& alias, const std::wstring& msg) ;
 
 		/** @brief	Clear the window content. */
 		virtual void eraseContent() ;

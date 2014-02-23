@@ -2,6 +2,7 @@
 #define __CHATUX_TYPEWINDOW__
 
 #include "Window.h"
+#include <wchar.h>
 #include <list>
 #include <string>
 
@@ -15,11 +16,11 @@
 class TypeWindow : public Window {
 	private:
 		/** @brief	Text the user is typing. */
-		std::string m_typedText ;
+		std::wstring m_typedText ;
 		/** @brief	List of the texts already sent. */
-		std::list<std::string> m_memory ;
+		std::list<std::wstring> m_memory ;
 		/** @brief	Pointer to the memory instructions already sent. */
-		std::list<std::string>::iterator m_memoryPosition ;
+		std::list<std::wstring>::iterator m_memoryPosition ;
 		
 
 	public:

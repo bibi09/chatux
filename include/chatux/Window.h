@@ -91,6 +91,35 @@ class Window : public Displayable, public Updatable, public Clearable {
 		 * 			direction.
 		 */
 		void moveCursor(Direction dir) ;
+
+
+		/**
+		 * @brief	Echo a character.
+		 * @param	c	Character to echo.
+		 * @return	OK on success, ERR on fail.
+		 */
+		int printChar(char c) ;
+
+		/**
+		 * @brief	Echo a character based string.
+		 * @param	str	String to echo.
+		 * @return	OK on success, ERR on fail.
+		 */
+		int printStr(const std::string& str) ;
+
+		/**
+		 * @brief	Echo a wide character.
+		 * @param	c	Character to echo.
+		 * @return	OK on success, ERR on fail.
+		 */
+		int printChar(wchar_t c) ;
+
+		/**
+		 * @brief	Echo a wide character based string.
+		 * @param	str	String to echo.
+		 * @return	OK on success, ERR on fail.
+		 */
+		int printStr(const std::wstring& str) ;
 } ;
 
 #endif

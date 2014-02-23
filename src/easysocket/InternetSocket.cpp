@@ -1,5 +1,6 @@
 #include <easysocket/InternetSocket.h>
 #include <sys/ioctl.h>
+#include <iostream>
 
 using namespace std ;
 using namespace es ;
@@ -26,6 +27,10 @@ InternetSocket::InternetSocket(int type,
     if (m_socketDesc == -1) {
         throw SocketException("Unable to get a socket descriptor") ;
     }
+    else {
+		int enabled = 1 ;
+		setsockopt(m_socketDesc, SOL_SOCKET, SO_REUSEADDR, &enabled, sizeof(enabled)) ;
+    }
 }
 
 InternetSocket::~InternetSocket() {
@@ -35,16 +40,42 @@ InternetSocket::~InternetSocket() {
 
 void InternetSocket::prepare(const std::string& ip,
                              unsigned short port) throw (SocketException) {
-    int ip_addr = (ip.empty()) ? htonl(INADDR_ANY) : inet_addr(ip.c_str()) ;
+//    int ip_addr = (ip.empty()) ? htonl(INADDR_ANY) : inet_addr(ip.c_str()) ;
+//    if (ip_addr == -1)
+//        throw SocketException("Undefined IP address") ;
 
-    if (ip_addr == -1)
-        throw SocketException("Undefined IP address") ;
+	#if SOCKET_FAMILY_USED == AF_INET
+		m_address.sin_family = AF_INET ;
+		m_address.sin_port = htons(port) ;
+		bzero(&(m_address.sin_zero), 8) ;
 
-    // Generate the structure used to link IP and port to the descriptor
-    m_address.sin_family = AF_INET ;
-    m_address.sin_addr.s_addr = ip_addr ;
-    m_address.sin_port = htons(port) ;
-    bzero(&(m_address.sin_zero), 8) ;
+		if (!ip.empty()) {
+			in_addr buffer ;
+			int success = inet_pton(AF_INET, ip.c_str(), &buffer) ;
+			if (success <= 0)
+				throw SocketException("Undefined IPv4 address") ;
+
+			m_address.sin_addr = buffer ;
+		}
+		else {
+			m_address.sin_addr.s_addr = htonl(INADDR_ANY) ;
+		}
+	#elif SOCKET_FAMILY_USED == AF_INET6
+		m_address.sin6_family = AF_INET6 ;
+		m_address.sin6_port = htons(port) ;
+
+		if (!ip.empty()) {
+			in6_addr buffer ;
+			int success = inet_pton(AF_INET6, ip.c_str(), &buffer) ;
+			if (success <= 0)
+				throw SocketException("Undefined IPv6 address") ;
+
+			m_address.sin6_addr = buffer ;
+		}
+		else {
+			m_address.sin6_addr = in6addr_any ;
+		}
+	#endif
 
     m_isPrepared = true ;
 }
@@ -74,17 +105,35 @@ int InternetSocket::connect(const std::string& ip,
     if (ip.empty())
         throw SocketException("No IP address of the server to connect to...") ;
 
-    m_address.sin_family = AF_INET ;
-    m_address.sin_addr.s_addr = inet_addr(ip.c_str()) ;
-    m_address.sin_port = htons(port) ;
-    bzero(&(m_address.sin_zero), 8) ;
+	#if SOCKET_FAMILY_USED == AF_INET
+		m_address.sin_family = AF_INET ;
+		m_address.sin_addr.s_addr = inet_addr(ip.c_str()) ;
+		m_address.sin_port = htons(port) ;
+		bzero(&(m_address.sin_zero), 8) ;
 
-    // Connect to the server
-    if (::connect(m_socketDesc,
-                  (struct sockaddr*) &m_address,
-                  sizeof m_address) == -1) {
-        throw SocketException("The server may not be listening.") ;
-    }
+		// Connect to the server
+		if (::connect(m_socketDesc,
+		              (struct sockaddr*) &m_address,
+		              sizeof m_address) == -1) {
+		    throw SocketException("The server may not be listening.") ;
+		}
+    #elif SOCKET_FAMILY_USED == AF_INET6
+		in6_addr buffer ;
+		unsigned char success = inet_pton(AF_INET6, ip.c_str(), &buffer) ;
+		if (!success)
+			throw SocketException("Undefined IPv6 address") ;
+
+		m_address.sin6_family = AF_INET6 ;
+		m_address.sin6_addr = buffer ;
+		m_address.sin6_port = htons(port) ;
+
+		// Connect to the server
+		if (::connect(m_socketDesc,
+		              (struct sockaddr*) &m_address,
+		              sizeof m_address) == -1) {
+		    throw SocketException("The server may not be listening.") ;
+		}
+    #endif
 
     return m_socketDesc ;
 }
@@ -314,9 +363,16 @@ int InternetSocket::getSocket() const {
     return m_socketDesc ;
 }
 
+
+#if SOCKET_FAMILY_USED == AF_INET
 const sockaddr_in& InternetSocket::getAddress() const {
     return m_address ;
 }
+#elif SOCKET_FAMILY_USED == AF_INET6
+const sockaddr_in6& InternetSocket::getAddress() const {
+    return m_address ;
+}
+#endif
 
 bool InternetSocket::isBound() const {
     return m_isBound ;
