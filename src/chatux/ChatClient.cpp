@@ -99,15 +99,18 @@ void ChatClient::run() {
 				case PROTOCOL_DISCONNECT:
 					break ;
 
+				case PROTOCOL_ECHO_SELF:
 				case PROTOCOL_ECHO:
 					{
 					wstring tmpAlias ;
-					wmemcpy(alias, buffer + 1, USER_ALIAS_LENGTH) ;
+					wmemcpy(alias, buffer + 1 + CLIENT_ID_SIZE, USER_ALIAS_LENGTH) ;
 					tmpAlias = alias ;
 					tmpAlias[USER_ALIAS_LENGTH] = L'\0' ;
 
-					static wchar_t* offsetMessage = buffer + 1 + USER_ALIAS_LENGTH ;
-					GlobalChatWindow -> echo(tmpAlias, offsetMessage) ;
+					static wchar_t* offsetMessage = buffer + 1 + CLIENT_ID_SIZE + USER_ALIAS_LENGTH ;
+					GlobalChatWindow -> echo((PROTOCOL_FLAGS) buffer[0],
+											 tmpAlias,
+											 offsetMessage) ;
 					}
 					break ;
 			}
@@ -138,5 +141,8 @@ void ChatClient::send(PROTOCOL_FLAGS protocol, const wstring& message) {
 
 
 void ChatClient::echo(const std::wstring& message) {
-	send(PROTOCOL_ECHO, message) ;
+	if (message[0] == L'/')
+		send(PROTOCOL_COMMAND, message) ;
+	else
+		send(PROTOCOL_ECHO, message) ;
 }

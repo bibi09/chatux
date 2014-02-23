@@ -11,6 +11,10 @@
 #include <curses.h>
 #include <pthread.h>
 
+#ifndef NCURSES_WIDECHAR
+	#include <ncursesw/curses.h>
+#endif
+
 #define	DEFAULT_COLOR_NAME	""
 
 

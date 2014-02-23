@@ -17,7 +17,7 @@ ChatWindow::ChatWindow(unsigned short width, unsigned short height,
 			   	   	   unsigned short posX, unsigned short posY)
 			: Window(width, height, posX, posY, true) {
 	setColorPair(NAME_COLOR_CHATTIME, COLOR_YELLOW, COLOR_BLACK) ;
-	setColorPair(NAME_COLOR_CHATME, COLOR_YELLOW, COLOR_BLACK) ;
+	setColorPair(NAME_COLOR_CHATME, COLOR_GREEN, COLOR_BLACK) ;
 	setColorPair(NAME_COLOR_CHATOTHERS, COLOR_CYAN, COLOR_BLACK) ;
 	setColorPair(NAME_COLOR_CHATMSG, COLOR_RED, COLOR_BLACK) ;
 }
@@ -35,7 +35,9 @@ void ChatWindow::display() {
 	wbkgd(m_cursesWindowPtr, COLOR_PAIR(defaultColor)) ;
 }
 
-void ChatWindow::echo(const wstring& alias, const wstring& msg) {
+void ChatWindow::echo(PROTOCOL_FLAGS protocol,
+					  const wstring& alias,
+					  const wstring& msg) {
 	// Display the date of the message
 	wattron(m_cursesWindowPtr, COLOR_PAIR(getColorPair(NAME_COLOR_CHATTIME))) ;
 		Window::printChar('[') ;
@@ -44,10 +46,21 @@ void ChatWindow::echo(const wstring& alias, const wstring& msg) {
 	wattroff(m_cursesWindowPtr, COLOR_PAIR(getColorPair(NAME_COLOR_CHATTIME))) ;
 
 	// Display the alias of the user who sent the message
-	wattron(m_cursesWindowPtr, COLOR_PAIR(getColorPair(NAME_COLOR_CHATOTHERS))) ;
+	short colorAlias ;
+	switch(protocol) {
+		default: break;
+		case PROTOCOL_ECHO:
+			colorAlias = getColorPair(NAME_COLOR_CHATOTHERS) ;
+			break ;
+		case PROTOCOL_ECHO_SELF:
+			colorAlias = getColorPair(NAME_COLOR_CHATME) ;
+			break ;
+	}
+
+	wattron(m_cursesWindowPtr, COLOR_PAIR(colorAlias)) ;
 		Window::printStr(alias) ;
 		Window::printStr(" : ") ;
-	wattroff(m_cursesWindowPtr, COLOR_PAIR(getColorPair(NAME_COLOR_CHATOTHERS))) ;
+	wattroff(m_cursesWindowPtr, COLOR_PAIR(colorAlias)) ;
 
 	Window::printStr(msg) ;
 	Window::printChar('\n') ;

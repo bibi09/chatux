@@ -1,7 +1,7 @@
 #ifndef __CHATUX_CONTEXT__
 #define __CHATUX_CONTEXT__
 
-#define CHATUX_VERSION 21
+#define CHATUX_VERSION 22
 
 #define USER_ALIAS_LENGTH 8
 typedef struct {
@@ -10,14 +10,16 @@ typedef struct {
 	unsigned short Port ;
 } Context ;
 
-
+#define CLIENT_ID_SIZE 		sizeof(int) / sizeof(wchar_t)
 #define BUFFER_MESSAGE_SIZE	255
 #define BUFFER_MESSAGE_SIZE_BYTES sizeof(wchar_t) * BUFFER_MESSAGE_SIZE
 /** @brief	Flags of the protocol used. */
 enum PROTOCOL_FLAGS {PROTOCOL_SERVER_DOWN	= 0,		// The server is down
 					 PROTOCOL_DISCONNECT	= 1,		// A client is disconnected
-					 PROTOCOL_ECHO 			= 2,		// A client send a message on chat
-					 PROTOCOL_ALIAS			= 3} ;		// A client changes its alias
+					 PROTOCOL_ECHO 			= 2,		// A client sends a message on chat
+					 PROTOCOL_ECHO_SELF		= 3,		// A client receives a message from himself
+					 PROTOCOL_COMMAND		= 4,		// A client sends a command
+					 PROTOCOL_ALIAS			= 5} ;		// A client changes its alias
 
 #define TEXT_NORMAL		"\x1B[0m"
 #define TEXT_RED		"\x1B[31m"

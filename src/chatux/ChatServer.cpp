@@ -59,6 +59,16 @@ void* ChatServer::manageClient(int socket) {
 	// Alias linked to the client.
 	wstring alias ;
 
+	// Length of the message header.
+	static const int headerLength = 1 + CLIENT_ID_SIZE ;
+	static const int headerAliasLength = 1 + CLIENT_ID_SIZE + USER_ALIAS_LENGTH ;
+
+	// Cache some offsets.
+	wchar_t* offsetRecv1 = received + 1 ;
+	wchar_t* offsetSent1 = sent + 1 ;
+	wchar_t* offsetSentID = offsetSent1 + CLIENT_ID_SIZE ;
+	wchar_t* offsetSentAlias = offsetSentID + USER_ALIAS_LENGTH ;
+
 	while (continueThread
 			&& (realSize = m_socket.recv(socket,
 										 received,
@@ -74,25 +84,32 @@ void* ChatServer::manageClient(int socket) {
 
 			case PROTOCOL_ECHO:
 				{
-				if (alias.empty())
-					// The client is not known, drop its message and stop the
-					// communication with it.
-					continueThread = false ;
+					if (alias.empty()) {
+						// The client is not known, drop its message and stop
+						// the communication with it.
+						continueThread = false ;
+					}
 
-				// Notify all the clients
-				size_t messageLength = wcslen(received + 1) + 1 ;
-				sizeSent = 1 + USER_ALIAS_LENGTH + messageLength ;
-				sent[0] = PROTOCOL_ECHO ;
-				wmemcpy(sent + 1, alias.c_str(), USER_ALIAS_LENGTH) ;
-				wmemcpy(sent + 1 + USER_ALIAS_LENGTH, received + 1, messageLength) ;
-				sendAll(sent, sizeof(wchar_t) * sizeSent) ;
+					// Compute the total size of the sent message
+					size_t messageLength = headerLength + wcslen(offsetRecv1) ;
+					sizeSent = headerAliasLength + messageLength ;
+
+					// Construction of the message:
+					// [ PROTOCOL | ID | ALIAS | MESSAGE ]
+					sent[0] = PROTOCOL_ECHO ;
+					memcpy(offsetSent1, &socket, sizeof(socket)) ;
+					wmemcpy(offsetSentID, alias.c_str(), USER_ALIAS_LENGTH) ;
+					wmemcpy(offsetSentAlias, offsetRecv1, messageLength) ;
+
+					// Notify all the clients
+					sendAll(sent, sizeof(wchar_t) * sizeSent) ;
 				}
 				break ;
 
 			case PROTOCOL_ALIAS:
 				// Manage alias setting
 				if (alias.empty())
-					alias = received + 1 ;
+					alias = offsetRecv1 ;
 				break ;
 		}
 	}
@@ -100,6 +117,20 @@ void* ChatServer::manageClient(int socket) {
 	return 0 ;
 }
 
+
 void ChatServer::send(int client_socket, void* message, size_t messageSize) {
-	m_socket.write(client_socket, message, messageSize) ;
+	wchar_t* trueMessage = (wchar_t*) message ;
+	// Socket of the original client who sent the message
+	int originalClientSocket ;
+	memcpy(&originalClientSocket, trueMessage + 1, sizeof(originalClientSocket)) ;
+
+	if (originalClientSocket == client_socket) {
+		wchar_t specialMessage[messageSize] ;
+		memcpy(specialMessage, trueMessage, messageSize) ;
+		specialMessage[0] = PROTOCOL_ECHO_SELF ;
+		m_socket.write(client_socket, specialMessage, messageSize) ;
+	}
+	else {
+		m_socket.write(client_socket, message, messageSize) ;
+	}
 }

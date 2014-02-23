@@ -10,9 +10,6 @@
 using namespace std ;
 
 
-//extern ChatWindow* GlobalChatWindow ;
-
-
 TypeWindow::TypeWindow(unsigned short width, unsigned short height,
 			   	   	   unsigned short posX, unsigned short posY)
 			: Window(width, height, posX, posY, false) {

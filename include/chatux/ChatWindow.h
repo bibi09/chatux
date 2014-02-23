@@ -1,8 +1,10 @@
 #ifndef __CHATUX_CHATWINDOW__
 #define __CHATUX_CHATWINDOW__
 
+#include "Chatux.h"
 #include "Window.h"
 #include <string>
+#include <map>
 
 /**
  * @brief	A ChatWindow displays messages from chat, i.e. current user and
@@ -11,9 +13,6 @@
  * @version	1.0	2014/02/17
  */
 class ChatWindow : public Window {
-	private:
-
-
 	public:
 		/**
 		 * @brief	Create a ChatWindow.
@@ -42,7 +41,9 @@ class ChatWindow : public Window {
 		 * @param	alias	Alias of the author of the message.
 		 * @param	msg		The message to display.
 		 */
-		virtual void echo(const std::wstring& alias, const std::wstring& msg) ;
+		virtual void echo(PROTOCOL_FLAGS protocol,
+						  const std::wstring& alias,
+						  const std::wstring& msg) ;
 
 		/** @brief	Clear the window content. */
 		virtual void eraseContent() ;

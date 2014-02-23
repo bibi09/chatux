@@ -48,7 +48,7 @@ EASYSOCKET_OUT	= $(LIBRARIES_DIR)/$(EASYSOCKET_NAME)
 INCLUDE_DIR		= $(ROOT_DIR)/include
 INCLUDES		= -I/usr/include/ -I$(INCLUDE_DIR)
 
-CHATUX_LIBS		= -lcursesw -lpthread -L$(LIBRARIES_DIR) -leasysocket -leasylog
+CHATUX_LIBS		= -lcurses -lpthread -L$(LIBRARIES_DIR) -leasysocket -leasylog
 EASYSOCKET_LIBS	= -lpthread
 
 
@@ -72,7 +72,7 @@ all: easylog easysocket chatux
 # Rules for EasySocket
 easysocket: setCCOptionsForEasySocket $(EASYSOCK_OBJECTS)
 	@echo -e "Linking to" $(EASYSOCKET_NAME)
-	@$(CC) $(CCOPTS) $(INCLUDES) $(EASYSOCKET_LIBS) $(EASYSOCK_OBJECTS) -o $(EASYSOCKET_OUT)
+	@$(CC) $(CCOPTS) $(INCLUDES) $(EASYSOCK_OBJECTS) $(EASYSOCKET_LIBS) -o $(EASYSOCKET_OUT)
 
 setCCOptionsForEasySocket:
 	@echo -e "\n--- Compilation of the EasySocket library ---"
@@ -82,7 +82,7 @@ setCCOptionsForEasySocket:
 # Rules for EasyLog
 easylog: setCCOptionsForEasyLog $(EASYLOG_OBJECTS)
 	@echo "Linking to" $(EASYLOG_NAME)
-	@$(CC) $(CCOPTS) $(INCLUDES) $(EASYLOG_LIBS) $(EASYLOG_OBJECTS) -o $(EASYLOG_OUT)
+	@$(CC) $(CCOPTS) $(INCLUDES) $(EASYLOG_OBJECTS) $(EASYLOG_LIBS) -o $(EASYLOG_OUT)
 
 setCCOptionsForEasyLog:
 	@echo -e "--- Compilation of the EasyLog library ---"
@@ -92,7 +92,7 @@ setCCOptionsForEasyLog:
 # Rules for Chatux
 chatux: setCCOptionsForChatux $(CHATUX_OBJECTS)
 	@echo "Linking to" $(EXECUTABLE_NAME)
-	@$(CC) $(CCOPTS) $(INCLUDES) $(CHATUX_LIBS) $(CHATUX_OBJECTS) -o $(EXECUTABLE)
+	@$(CC) $(CCOPTS) $(INCLUDES) $(CHATUX_OBJECTS) $(CHATUX_LIBS) -o $(EXECUTABLE)
 
 setCCOptionsForChatux:
 	@echo -e "\n--- Compilation of Chatux" $(INFO_DEBUG) "---"
